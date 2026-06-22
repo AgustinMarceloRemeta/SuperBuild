@@ -61,7 +61,11 @@
         showBanner: unityShowBanner,
       };
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) || 
+                     ('ontouchstart' in window);
+
+      if (isMobile) {
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
@@ -91,23 +95,41 @@
       var fsBtn = document.getElementById('mi-fullscreen-btn');
 
       function toggleFS() {
-        var container = document.getElementById('unity-container');
-        if (!document.fullscreenElement) {
-          var req = container.requestFullscreen || container.webkitRequestFullscreen || container.mozRequestFullScreen;
+        var doc = document.documentElement;
+        var req = doc.requestFullscreen || doc.webkitRequestFullscreen || doc.mozRequestFullScreen;
+        
+        if (!document.fullscreenElement && !container.classList.contains("fs-fallback")) {
           if (req) {
-            var promise = req.call(container);
-            if (promise && promise.then) {
-              promise.then(lockLandscape).catch(function(e) { console.warn(e); });
-            } else {
-              setTimeout(lockLandscape, 100);
+            try {
+              var promise = req.call(doc);
+              if (promise && promise.then) {
+                promise.then(lockLandscape).catch(function(e) {
+                  console.warn("Fullscreen blocked, using fallback", e);
+                  container.classList.add("fs-fallback");
+                  lockLandscape();
+                });
+              } else {
+                setTimeout(lockLandscape, 100);
+              }
+            } catch (err) {
+              console.warn("Fullscreen error, using fallback", err);
+              container.classList.add("fs-fallback");
+              lockLandscape();
             }
+          } else {
+            container.classList.add("fs-fallback");
+            lockLandscape();
           }
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
         } else {
           unlockLandscape();
-          if (document.exitFullscreen) document.exitFullscreen();
-          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-          else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+          if (document.fullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+          } else {
+            container.classList.remove("fs-fallback");
+          }
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
         }
       }
@@ -129,6 +151,7 @@
       document.addEventListener('fullscreenchange', function() {
         if (!document.fullscreenElement) {
           unlockLandscape();
+          container.classList.remove("fs-fallback");
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
         }
       });
