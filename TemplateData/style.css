@@ -8,37 +8,57 @@ body { padding: 0; margin: 0 }
 #unity-logo { width: 154px; height: 130px; background: url('unity-logo-dark.png') no-repeat center }
 #unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; margin-left: 6.5px; background: url('progress-bar-empty-dark.png') no-repeat center }
 #unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url('progress-bar-full-dark.png') no-repeat center }
-#unity-footer { position: relative }
-.unity-mobile #unity-footer { display: none }
-#unity-logo-title-footer { float:left; width: 102px; height: 38px; background: url('unity-logo-title-footer.png') no-repeat center }
-#unity-build-title { float: right; margin-right: 10px; line-height: 38px; font-family: arial; font-size: 18px }
-#unity-fullscreen-button { display: none }
 #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
+
+#unity-container:fullscreen {
+    width: 100% !important;
+    height: 100% !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+}
+
+#unity-container:fullscreen #unity-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+}
 
 #mi-fullscreen-btn {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
+    bottom: 15px;
+    right: 15px;
     z-index: 100;
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.65);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    transition: background 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 #mi-fullscreen-btn svg {
     width: 20px;
     height: 20px;
-    fill: white;
+    fill: #f8fafc;
+    transition: transform 0.2s ease;
 }
 
 #mi-fullscreen-btn:hover {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+#mi-fullscreen-btn:active {
+    transform: scale(0.95);
 }
