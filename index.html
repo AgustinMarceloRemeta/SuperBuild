@@ -9,7 +9,7 @@
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=1080 height=920 tabindex="-1"></canvas>
+      <canvas id="unity-canvas" width=480 height=270 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
@@ -22,13 +22,6 @@
           <path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/>
         </svg>
       </button>
-    </div>
-    <div id="rotation-prompt">
-      <svg viewBox="0 0 24 24" width="80" height="80">
-        <path d="M16 1H8C6.9 1 6 1.9 6 3v18c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H8V5h8v14z"/>
-      </svg>
-      <div class="prompt-title">Por favor, rota tu dispositivo</div>
-      <div class="prompt-subtitle">Gira tu teléfono horizontalmente para poder jugar.</div>
     </div>
     <script>
       var container = document.querySelector("#unity-container");
@@ -76,8 +69,8 @@
         container.className = "unity-mobile";
         canvas.className = "unity-mobile";
       } else {
-        canvas.style.width = "1080px";
-        canvas.style.height = "920px";
+        canvas.style.width = "480px";
+        canvas.style.height = "270px";
       }
 
       loadingBar.style.display = "block";
