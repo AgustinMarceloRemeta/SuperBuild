@@ -101,6 +101,10 @@ body { padding: 0; margin: 0 }
 }
 
 @media (orientation: portrait) {
+    html, body {
+        overflow: visible !important;
+    }
+
     #unity-container.unity-mobile,
     #unity-container.unity-mobile:fullscreen,
     #unity-container.unity-mobile:-webkit-full-screen,
@@ -112,6 +116,7 @@ body { padding: 0; margin: 0 }
         top: 0 !important;
         transform: none !important;
         z-index: 9999 !important;
+        overflow: visible !important;
     }
     
     .unity-mobile #unity-canvas {
