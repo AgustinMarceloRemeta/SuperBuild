@@ -95,13 +95,12 @@
       var fsBtn = document.getElementById('mi-fullscreen-btn');
 
       function toggleFS() {
-        var doc = document.documentElement;
-        var req = doc.requestFullscreen || doc.webkitRequestFullscreen || doc.mozRequestFullScreen;
+        var req = container.requestFullscreen || container.webkitRequestFullscreen || container.mozRequestFullScreen;
         
         if (!document.fullscreenElement && !container.classList.contains("fs-fallback")) {
           if (req) {
             try {
-              var promise = req.call(doc);
+              var promise = req.call(container);
               if (promise && promise.then) {
                 promise.then(lockLandscape).catch(function(e) {
                   console.warn("Fullscreen blocked, using fallback", e);
