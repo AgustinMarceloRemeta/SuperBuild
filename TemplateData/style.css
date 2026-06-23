@@ -120,6 +120,7 @@ body { padding: 0; margin: 0 }
         height: 100vw !important;
         max-width: none !important;
         max-height: none !important;
+        object-fit: fill !important;
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) rotate(90deg) !important;
