@@ -164,20 +164,23 @@
       }
 
       function applyPortraitRotation() {
-        var sw = screen.width;
-        var sh = screen.height;
-        var w = Math.max(sw, sh);
-        var h = Math.min(sw, sh);
-        canvas.style.position = 'absolute';
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
+        canvas.style.position = 'fixed';
+        canvas.style.width = '100vh';
+        canvas.style.height = '100vw';
         canvas.style.maxWidth = 'none';
         canvas.style.maxHeight = 'none';
-        canvas.style.left = '50%';
-        canvas.style.top = '50%';
+        canvas.style.top = '50vh';
+        canvas.style.left = '50vw';
+        canvas.style.zIndex = '99999';
         canvas.style.transform = 'translate(-50%, -50%) rotate(90deg)';
         canvas.style.transformOrigin = 'center center';
-        container.style.overflow = 'visible';
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.background = 'black';
+        container.style.zIndex = '9998';
         if (!portraitActive) {
           portraitActive = true;
           touchHandler = remapTouchCoords;
@@ -193,11 +196,18 @@
         canvas.style.height = '';
         canvas.style.maxWidth = '';
         canvas.style.maxHeight = '';
-        canvas.style.left = '';
         canvas.style.top = '';
+        canvas.style.left = '';
+        canvas.style.zIndex = '';
         canvas.style.transform = '';
         canvas.style.transformOrigin = '';
-        container.style.overflow = '';
+        container.style.position = '';
+        container.style.top = '';
+        container.style.left = '';
+        container.style.width = '';
+        container.style.height = '';
+        container.style.background = '';
+        container.style.zIndex = '';
         if (portraitActive && touchHandler) {
           canvas.removeEventListener('touchstart', touchHandler, { capture: true });
           canvas.removeEventListener('touchmove', touchHandler, { capture: true });
@@ -206,6 +216,7 @@
           portraitActive = false;
         }
       }
+
 
       function enterFS() {
         var req = container.requestFullscreen || container.webkitRequestFullscreen || container.mozRequestFullScreen;
