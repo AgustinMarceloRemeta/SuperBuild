@@ -101,14 +101,16 @@ body { padding: 0; margin: 0 }
 }
 
 @media (pointer: coarse) and (orientation: portrait) {
-    #unity-container.unity-mobile {
+    #unity-container.unity-mobile,
+    #unity-container.unity-mobile:fullscreen,
+    #unity-container.unity-mobile:-webkit-full-screen {
         position: fixed !important;
         width: 100vh !important;
         height: 100vw !important;
         left: 50% !important;
         top: 50% !important;
         transform: translate(-50%, -50%) rotate(90deg) !important;
-        transform-origin: center center;
+        transform-origin: center center !important;
         z-index: 9999 !important;
     }
     
