@@ -66,31 +66,110 @@
                      (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
                      ('ontouchstart' in window);
 
+      if (isMobile) {
+        var originalWidthDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
+        var originalHeightDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'height');
+
+        Object.defineProperty(canvas, 'width', {
+          get: function() {
+            return originalWidthDesc.get.call(this);
+          },
+          set: function(val) {
+            var dpr = window.devicePixelRatio || 1;
+            var w = window.innerWidth * dpr;
+            var h = window.innerHeight * dpr;
+            if (h > w) {
+              originalWidthDesc.set.call(this, Math.max(w, h));
+            } else {
+              originalWidthDesc.set.call(this, val);
+            }
+          }
+        });
+
+        Object.defineProperty(canvas, 'height', {
+          get: function() {
+            return originalHeightDesc.get.call(this);
+          },
+          set: function(val) {
+            var dpr = window.devicePixelRatio || 1;
+            var w = window.innerWidth * dpr;
+            var h = window.innerHeight * dpr;
+            if (h > w) {
+              originalHeightDesc.set.call(this, Math.min(w, h));
+            } else {
+              originalHeightDesc.set.call(this, val);
+            }
+          }
+        });
+
+        var originalSetAttribute = canvas.setAttribute;
+        canvas.setAttribute = function(name, value) {
+          if (isMobile) {
+            var dpr = window.devicePixelRatio || 1;
+            var w = window.innerWidth * dpr;
+            var h = window.innerHeight * dpr;
+            if (h > w) {
+              if (name === 'width') {
+                value = Math.max(w, h);
+              } else if (name === 'height') {
+                value = Math.min(w, h);
+              }
+            }
+          }
+          originalSetAttribute.call(this, name, value);
+        };
+      }
+
       function applyRotation() {
         var vw = window.innerWidth;
         var vh = window.innerHeight;
-        container.style.position        = 'fixed';
-        container.style.width           = vh + 'px';
-        container.style.height          = vw + 'px';
-        container.style.top             = '50%';
-        container.style.left            = '50%';
-        container.style.transform       = 'translate(-50%, -50%) rotate(90deg)';
-        container.style.transformOrigin = 'center center';
-        container.style.overflow        = 'hidden';
-        container.style.background      = 'black';
-        container.style.zIndex          = '9999';
-        canvas.style.width              = '100%';
-        canvas.style.height             = '100%';
-        canvas.style.position           = '';
-        canvas.style.transform          = '';
-        canvas.style.top                = '';
-        canvas.style.left               = '';
-        canvas.style.maxWidth           = '';
-        canvas.style.maxHeight          = '';
-        canvas.style.zIndex             = '';
+        if (vw >= vh) {
+          container.style.position        = 'fixed';
+          container.style.width           = '100%';
+          container.style.height          = '100%';
+          container.style.top             = '0';
+          container.style.left            = '0';
+          container.style.transform       = 'none';
+          container.style.transformOrigin = '';
+          container.style.overflow        = 'hidden';
+          container.style.background      = 'black';
+          container.style.zIndex          = '9999';
+          canvas.style.width              = '100%';
+          canvas.style.height             = '100%';
+          canvas.style.position           = '';
+          canvas.style.transform          = '';
+          canvas.style.top                = '';
+          canvas.style.left               = '';
+          canvas.style.maxWidth           = '';
+          canvas.style.maxHeight          = '';
+          canvas.style.zIndex             = '';
+        } else {
+          container.style.position        = 'fixed';
+          container.style.width           = vh + 'px';
+          container.style.height          = vw + 'px';
+          container.style.top             = '50%';
+          container.style.left            = '50%';
+          container.style.transform       = 'translate(-50%, -50%) rotate(90deg)';
+          container.style.transformOrigin = 'center center';
+          container.style.overflow        = 'hidden';
+          container.style.background      = 'black';
+          container.style.zIndex          = '9999';
+          canvas.style.width              = '100%';
+          canvas.style.height             = '100%';
+          canvas.style.position           = '';
+          canvas.style.transform          = '';
+          canvas.style.top                = '';
+          canvas.style.left               = '';
+          canvas.style.maxWidth           = '';
+          canvas.style.maxHeight          = '';
+          canvas.style.zIndex             = '';
+        }
       }
 
       function remapPointer(e) {
+        if (window.innerHeight <= window.innerWidth) {
+          return;
+        }
         var rect    = canvas.getBoundingClientRect();
         var cx      = rect.left + rect.width  / 2;
         var cy      = rect.top  + rect.height / 2;
@@ -111,6 +190,14 @@
         document.getElementsByTagName('head')[0].appendChild(meta);
         container.className = "unity-mobile";
         canvas.className    = "unity-mobile";
+
+        var dpr = window.devicePixelRatio || 1;
+        var w = window.innerWidth * dpr;
+        var h = window.innerHeight * dpr;
+        if (h > w) {
+          canvas.setAttribute('width', Math.max(w, h));
+          canvas.setAttribute('height', Math.min(w, h));
+        }
 
         applyRotation();
         window.addEventListener('resize',            applyRotation);
@@ -157,15 +244,37 @@
         }).then((unityInstance) => {
           loadingBar.style.display = "none";
           if (isMobile) {
+            var dpr = window.devicePixelRatio || 1;
+            var w = window.innerWidth * dpr;
+            var h = window.innerHeight * dpr;
+            if (h > w) {
+              canvas.setAttribute('width', Math.max(w, h));
+              canvas.setAttribute('height', Math.min(w, h));
+            }
             applyRotation();
             var guard = false;
-            new MutationObserver(function() {
+            new MutationObserver(function(mutations) {
               if (!guard) {
                 guard = true;
+                var widthOrHeightChanged = false;
+                mutations.forEach(function(mutation) {
+                  if (mutation.attributeName === 'width' || mutation.attributeName === 'height') {
+                    widthOrHeightChanged = true;
+                  }
+                });
+                if (widthOrHeightChanged) {
+                  var dpr = window.devicePixelRatio || 1;
+                  var w = window.innerWidth * dpr;
+                  var h = window.innerHeight * dpr;
+                  if (h > w) {
+                    canvas.setAttribute('width', Math.max(w, h));
+                    canvas.setAttribute('height', Math.min(w, h));
+                  }
+                }
                 applyRotation();
                 guard = false;
               }
-            }).observe(canvas, { attributes: true, attributeFilter: ['style'] });
+            }).observe(canvas, { attributes: true, attributeFilter: ['style', 'width', 'height'] });
           }
         }).catch((message) => {
           alert(message);
