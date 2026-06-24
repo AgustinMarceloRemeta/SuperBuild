@@ -156,6 +156,17 @@
           progressBarFull.style.width = 100 * progress + "%";
         }).then((unityInstance) => {
           loadingBar.style.display = "none";
+          if (isMobile) {
+            applyRotation();
+            var guard = false;
+            new MutationObserver(function() {
+              if (!guard) {
+                guard = true;
+                applyRotation();
+                guard = false;
+              }
+            }).observe(canvas, { attributes: true, attributeFilter: ['style'] });
+          }
         }).catch((message) => {
           alert(message);
         });
@@ -164,17 +175,17 @@
 
       if (isMobile) {
         var dbg = document.createElement('div');
-        dbg.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;background:rgba(0,0,0,0.8);color:lime;font-size:12px;padding:6px;font-family:monospace;max-width:100%;pointer-events:none;';
+        dbg.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;background:rgba(0,0,0,0.8);color:lime;font-size:11px;padding:6px;font-family:monospace;max-width:100%;pointer-events:none;';
         document.body.appendChild(dbg);
         setInterval(function() {
           dbg.innerHTML =
             'iW=' + window.innerWidth + ' iH=' + window.innerHeight + '<br>' +
-            'sW=' + screen.width    + ' sH=' + screen.height    + '<br>' +
-            'ctr.w=' + container.style.width + '<br>' +
-            'ctr.h=' + container.style.height + '<br>' +
+            'ctr.style.w=' + container.style.width + ' h=' + container.style.height + '<br>' +
+            'ctr.offset.w=' + container.offsetWidth + ' h=' + container.offsetHeight + '<br>' +
             'ctr.tf=' + container.style.transform + '<br>' +
-            'cnv.w=' + canvas.style.width + '<br>' +
-            'cnv.h=' + canvas.style.height + '<br>' +
+            'cnv.style.w=' + canvas.style.width + ' h=' + canvas.style.height + '<br>' +
+            'cnv.offset.w=' + canvas.offsetWidth + ' h=' + canvas.offsetHeight + '<br>' +
+            'cnv.attr.w=' + canvas.getAttribute('width') + ' h=' + canvas.getAttribute('height') + '<br>' +
             'cnv.tf=' + canvas.style.transform;
         }, 500);
       }
