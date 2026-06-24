@@ -62,30 +62,3 @@ body { padding: 0; margin: 0 }
 #mi-fullscreen-btn:active {
     transform: scale(0.95);
 }
-
-/* Rotated portrait container backdrop style */
-#unity-container.rotated-portrait {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: black !important;
-    z-index: 99998 !important;
-    overflow: hidden !important;
-}
-
-/* Rotated portrait canvas style */
-#unity-canvas.rotated-portrait {
-    position: fixed !important;
-    width: 100vh !important;
-    height: 100vw !important;
-    max-width: none !important;
-    max-height: none !important;
-    object-fit: fill !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) rotate(90deg) !important;
-    transform-origin: center center !important;
-    z-index: 99999 !important;
-}
