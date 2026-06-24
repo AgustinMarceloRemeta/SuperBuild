@@ -68,41 +68,13 @@
                      (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) || 
                      ('ontouchstart' in window);
 
-      function isPortrait() {
-        return window.innerHeight > window.innerWidth;
-      }
-
-      function remapEventCoords(e) {
-        if (isMobile && isPortrait()) {
-          var rect = canvas.getBoundingClientRect();
-          var centerX = rect.left + rect.width / 2;
-          var centerY = rect.top + rect.height / 2;
-          var dx = e.clientX - centerX;
-          var dy = e.clientY - centerY;
-          var newX = centerX - dy;
-          var newY = centerY + dx;
-          Object.defineProperty(e, 'clientX', { value: newX, configurable: true });
-          Object.defineProperty(e, 'clientY', { value: newY, configurable: true });
-          Object.defineProperty(e, 'pageX', { value: newX, configurable: true });
-          Object.defineProperty(e, 'pageY', { value: newY, configurable: true });
-        }
-      }
-
       if (isMobile) {
         var meta = document.createElement('meta');
         meta.name = 'viewport';
-        meta.content = 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover';
+        meta.content = 'width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         container.className = "unity-mobile";
         canvas.className = "unity-mobile";
-
-        var eventsToRemap = [
-          'pointerdown', 'pointermove', 'pointerup', 'pointercancel',
-          'mousedown', 'mousemove', 'mouseup'
-        ];
-        eventsToRemap.forEach(function(evtName) {
-          canvas.addEventListener(evtName, remapEventCoords, { passive: false, capture: true });
-        });
       } else {
         canvas.style.width = "640px";
         canvas.style.height = "360px";
@@ -169,6 +141,28 @@
 
       var fsBtn = document.getElementById('mi-fullscreen-btn');
 
+      function isPortrait() {
+        return window.innerHeight > window.innerWidth;
+      }
+
+      var portraitActive = false;
+      var touchHandler = null;
+
+      function remapTouchCoords(e) {
+        var rect = canvas.getBoundingClientRect();
+        var centerX = rect.left + rect.width / 2;
+        var centerY = rect.top + rect.height / 2;
+
+        var touches = e.changedTouches || e.touches;
+        for (var i = 0; i < touches.length; i++) {
+          var t = touches[i];
+          var dx = t.clientX - centerX;
+          var dy = t.clientY - centerY;
+          Object.defineProperty(t, 'clientX', { value: centerX - dy, configurable: true });
+          Object.defineProperty(t, 'clientY', { value: centerY + dx, configurable: true });
+        }
+      }
+
       function applyPortraitRotation() {
         canvas.style.position = 'fixed';
         canvas.style.width = '100vh';
@@ -187,6 +181,13 @@
         container.style.height = '100%';
         container.style.background = 'black';
         container.style.zIndex = '9998';
+        if (!portraitActive) {
+          portraitActive = true;
+          touchHandler = remapTouchCoords;
+          canvas.addEventListener('touchstart', touchHandler, { passive: false, capture: true });
+          canvas.addEventListener('touchmove', touchHandler, { passive: false, capture: true });
+          canvas.addEventListener('touchend', touchHandler, { passive: false, capture: true });
+        }
       }
 
       function removePortraitRotation() {
@@ -207,6 +208,13 @@
         container.style.height = '';
         container.style.background = '';
         container.style.zIndex = '';
+        if (portraitActive && touchHandler) {
+          canvas.removeEventListener('touchstart', touchHandler, { capture: true });
+          canvas.removeEventListener('touchmove', touchHandler, { capture: true });
+          canvas.removeEventListener('touchend', touchHandler, { capture: true });
+          touchHandler = null;
+          portraitActive = false;
+        }
       }
 
 
@@ -217,30 +225,30 @@
             var promise = req.call(container);
             if (promise && promise.then) {
               promise.then(function() {
-                if (isMobile && isPortrait()) applyPortraitRotation();
+                if (isPortrait()) applyPortraitRotation();
               }).catch(function(e) {
                 console.warn('Fullscreen blocked, using fallback', e);
                 container.classList.add('fs-fallback');
-                if (isMobile && isPortrait()) applyPortraitRotation();
+                if (isPortrait()) applyPortraitRotation();
               });
             } else {
               setTimeout(function() {
-                if (isMobile && isPortrait()) applyPortraitRotation();
+                if (isPortrait()) applyPortraitRotation();
               }, 150);
             }
           } catch (err) {
             console.warn('Fullscreen error, using fallback', err);
             container.classList.add('fs-fallback');
-            if (isMobile && isPortrait()) applyPortraitRotation();
+            if (isPortrait()) applyPortraitRotation();
           }
         } else {
           container.classList.add('fs-fallback');
-          if (isMobile && isPortrait()) applyPortraitRotation();
+          if (isPortrait()) applyPortraitRotation();
         }
       }
 
       function exitFS() {
-        if (isMobile && isPortrait()) removePortraitRotation();
+        removePortraitRotation();
         container.classList.remove('fs-fallback');
         if (document.fullscreenElement) {
           if (document.exitFullscreen) document.exitFullscreen();
@@ -266,7 +274,7 @@
       document.addEventListener('fullscreenchange', function() {
         if (!document.fullscreenElement && fsActive) {
           fsActive = false;
-          if (isMobile && isPortrait()) removePortraitRotation();
+          removePortraitRotation();
           container.classList.remove('fs-fallback');
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
         }
@@ -275,7 +283,7 @@
       document.addEventListener('webkitfullscreenchange', function() {
         if (!document.webkitFullscreenElement && fsActive) {
           fsActive = false;
-          if (isMobile && isPortrait()) removePortraitRotation();
+          removePortraitRotation();
           container.classList.remove('fs-fallback');
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
         }
