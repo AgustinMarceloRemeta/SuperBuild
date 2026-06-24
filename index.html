@@ -8,26 +8,6 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css?v=3">
     <style>
-      @media screen and (orientation: portrait) {
-        #unity-container {
-          width: 100vh !important;
-          height: 100vw !important;
-          transform: rotate(90deg) translate(0, -100%) !important;
-          transform-origin: top left !important;
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          overflow: hidden !important;
-        }
-        body { overflow: hidden; background: black; }
-      }
-      @media screen and (orientation: landscape) {
-        #unity-container {
-          transform: none !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
-      }
       .fs-fallback {
         position: fixed !important;
         top: 0 !important; left: 0 !important;
@@ -124,18 +104,6 @@
       };
       document.body.appendChild(script);
 
-      function lockLandscape() {
-        if (isMobile && screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(function() {});
-        }
-      }
-
-      function unlockOrientation() {
-        if (isMobile && screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
-        }
-      }
-
       function enterFS() {
         var req = container.requestFullscreen
           || container.webkitRequestFullscreen
@@ -143,28 +111,18 @@
         if (req) {
           try {
             var p = req.call(container);
-            if (p && p.then) {
-              p.then(function() {
-                lockLandscape();
-              }).catch(function() {
-                container.classList.add('fs-fallback');
-                lockLandscape();
-              });
-            } else {
-              setTimeout(function() { lockLandscape(); }, 150);
-            }
+            if (p && p.catch) p.catch(function() {
+              container.classList.add('fs-fallback');
+            });
           } catch(e) {
             container.classList.add('fs-fallback');
-            lockLandscape();
           }
         } else {
           container.classList.add('fs-fallback');
-          lockLandscape();
         }
       }
 
       function exitFS() {
-        unlockOrientation();
         container.classList.remove('fs-fallback');
         if (document.fullscreenElement || document.webkitFullscreenElement) {
           (document.exitFullscreen || document.webkitExitFullscreen
@@ -194,7 +152,6 @@
         document.addEventListener(ev, function() {
           if (!document.fullscreenElement && !document.webkitFullscreenElement && fsActive) {
             fsActive = false;
-            unlockOrientation();
             container.classList.remove('fs-fallback');
             setFSIcon(false);
           }
