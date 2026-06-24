@@ -162,6 +162,23 @@
       };
       document.body.appendChild(script);
 
+      if (isMobile) {
+        var dbg = document.createElement('div');
+        dbg.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;background:rgba(0,0,0,0.8);color:lime;font-size:12px;padding:6px;font-family:monospace;max-width:100%;pointer-events:none;';
+        document.body.appendChild(dbg);
+        setInterval(function() {
+          dbg.innerHTML =
+            'iW=' + window.innerWidth + ' iH=' + window.innerHeight + '<br>' +
+            'sW=' + screen.width    + ' sH=' + screen.height    + '<br>' +
+            'ctr.w=' + container.style.width + '<br>' +
+            'ctr.h=' + container.style.height + '<br>' +
+            'ctr.tf=' + container.style.transform + '<br>' +
+            'cnv.w=' + canvas.style.width + '<br>' +
+            'cnv.h=' + canvas.style.height + '<br>' +
+            'cnv.tf=' + canvas.style.transform;
+        }, 500);
+      }
+
       var fsBtn = document.getElementById('mi-fullscreen-btn');
 
       function toggleFS() {
