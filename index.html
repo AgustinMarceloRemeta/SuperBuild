@@ -61,16 +61,109 @@
         showBanner: unityShowBanner,
       };
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) || 
+                     ('ontouchstart' in window);
+
+      function isPortrait() {
+        return window.innerHeight > window.innerWidth;
+      }
+
+      function checkOrientation() {
+        if (!isMobile) return;
+        if (isPortrait()) {
+          canvas.classList.add('rotated-portrait');
+          container.classList.add('rotated-portrait');
+        } else {
+          canvas.classList.remove('rotated-portrait');
+          container.classList.remove('rotated-portrait');
+        }
+      }
+
+      function remapEventCoords(e) {
+        if (isMobile && canvas.classList.contains('rotated-portrait')) {
+          var rect = canvas.getBoundingClientRect();
+          var centerX = rect.left + rect.width / 2;
+          var centerY = rect.top + rect.height / 2;
+          var dx = e.clientX - centerX;
+          var dy = e.clientY - centerY;
+          var newX = centerX - dy;
+          var newY = centerY + dx;
+          Object.defineProperty(e, 'clientX', { value: newX, configurable: true });
+          Object.defineProperty(e, 'clientY', { value: newY, configurable: true });
+          Object.defineProperty(e, 'pageX', { value: newX, configurable: true });
+          Object.defineProperty(e, 'pageY', { value: newY, configurable: true });
+        }
+      }
+
+      if (isMobile) {
         var meta = document.createElement('meta');
         meta.name = 'viewport';
-        meta.content = 'width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        meta.content = 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover';
         document.getElementsByTagName('head')[0].appendChild(meta);
         container.className = "unity-mobile";
         canvas.className = "unity-mobile";
+
+        var eventsToRemap = [
+          'pointerdown', 'pointermove', 'pointerup', 'pointercancel',
+          'mousedown', 'mousemove', 'mouseup'
+        ];
+        eventsToRemap.forEach(function(evtName) {
+          canvas.addEventListener(evtName, remapEventCoords, { passive: false, capture: true });
+        });
+
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+        checkOrientation();
       } else {
         canvas.style.width = "640px";
         canvas.style.height = "360px";
+      }
+
+      if (isSafari && isMobile) {
+        function touchToPointer(type, touch) {
+          var evt = new PointerEvent(type, {
+            pointerId: touch.identifier + 1,
+            pointerType: 'touch',
+            isPrimary: touch.identifier === 0,
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            screenX: touch.screenX,
+            screenY: touch.screenY,
+            pageX: touch.pageX,
+            pageY: touch.pageY,
+            pressure: type === 'pointerup' ? 0 : 1,
+            bubbles: true,
+            cancelable: true,
+          });
+          canvas.dispatchEvent(evt);
+        }
+
+        canvas.addEventListener('touchstart', function(e) {
+          canvas.focus();
+          e.preventDefault();
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointerdown', e.changedTouches[i]);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', function(e) {
+          e.preventDefault();
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointermove', e.changedTouches[i]);
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointerup', e.changedTouches[i]);
+        }, { passive: false });
+
+        canvas.addEventListener('touchcancel', function(e) {
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointercancel', e.changedTouches[i]);
+        }, { passive: false });
       }
 
       loadingBar.style.display = "block";
