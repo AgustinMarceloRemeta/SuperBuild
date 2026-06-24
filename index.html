@@ -67,57 +67,65 @@
                      ('ontouchstart' in window);
 
       if (isMobile) {
-        var originalWidthDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
-        var originalHeightDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'height');
+        try {
+          var originalWidthDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
+          var originalHeightDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'height');
 
-        Object.defineProperty(canvas, 'width', {
-          get: function() {
-            return originalWidthDesc.get.call(this);
-          },
-          set: function(val) {
-            var dpr = window.devicePixelRatio || 1;
-            var w = window.innerWidth * dpr;
-            var h = window.innerHeight * dpr;
-            if (h > w) {
-              originalWidthDesc.set.call(this, Math.max(w, h));
-            } else {
-              originalWidthDesc.set.call(this, val);
-            }
+          if (originalWidthDesc && originalHeightDesc) {
+            Object.defineProperty(canvas, 'width', {
+              get: function() {
+                return originalWidthDesc.get.call(this);
+              },
+              set: function(val) {
+                var dpr = window.devicePixelRatio || 1;
+                var w = window.innerWidth * dpr;
+                var h = window.innerHeight * dpr;
+                if (h > w) {
+                  originalWidthDesc.set.call(this, Math.round(Math.max(w, h)));
+                } else {
+                  originalWidthDesc.set.call(this, val);
+                }
+              }
+            });
+
+            Object.defineProperty(canvas, 'height', {
+              get: function() {
+                return originalHeightDesc.get.call(this);
+              },
+              set: function(val) {
+                var dpr = window.devicePixelRatio || 1;
+                var w = window.innerWidth * dpr;
+                var h = window.innerHeight * dpr;
+                if (h > w) {
+                  originalHeightDesc.set.call(this, Math.round(Math.min(w, h)));
+                } else {
+                  originalHeightDesc.set.call(this, val);
+                }
+              }
+            });
           }
-        });
+        } catch (e) {
+        }
 
-        Object.defineProperty(canvas, 'height', {
-          get: function() {
-            return originalHeightDesc.get.call(this);
-          },
-          set: function(val) {
-            var dpr = window.devicePixelRatio || 1;
-            var w = window.innerWidth * dpr;
-            var h = window.innerHeight * dpr;
-            if (h > w) {
-              originalHeightDesc.set.call(this, Math.min(w, h));
-            } else {
-              originalHeightDesc.set.call(this, val);
-            }
-          }
-        });
-
-        var originalSetAttribute = canvas.setAttribute;
-        canvas.setAttribute = function(name, value) {
-          if (isMobile) {
-            var dpr = window.devicePixelRatio || 1;
-            var w = window.innerWidth * dpr;
-            var h = window.innerHeight * dpr;
-            if (h > w) {
-              if (name === 'width') {
-                value = Math.max(w, h);
-              } else if (name === 'height') {
-                value = Math.min(w, h);
+        try {
+          var originalSetAttribute = canvas.setAttribute;
+          canvas.setAttribute = function(name, value) {
+            if (isMobile) {
+              var dpr = window.devicePixelRatio || 1;
+              var w = window.innerWidth * dpr;
+              var h = window.innerHeight * dpr;
+              if (h > w) {
+                if (name === 'width') {
+                  value = Math.round(Math.max(w, h));
+                } else if (name === 'height') {
+                  value = Math.round(Math.min(w, h));
+                }
               }
             }
-          }
-          originalSetAttribute.call(this, name, value);
-        };
+            originalSetAttribute.call(this, name, value);
+          };
+        } catch (e) {
+        }
       }
 
       function applyRotation() {
@@ -195,8 +203,8 @@
         var w = window.innerWidth * dpr;
         var h = window.innerHeight * dpr;
         if (h > w) {
-          canvas.setAttribute('width', Math.max(w, h));
-          canvas.setAttribute('height', Math.min(w, h));
+          canvas.setAttribute('width', Math.round(Math.max(w, h)));
+          canvas.setAttribute('height', Math.round(Math.min(w, h)));
         }
 
         applyRotation();
@@ -248,8 +256,8 @@
             var w = window.innerWidth * dpr;
             var h = window.innerHeight * dpr;
             if (h > w) {
-              canvas.setAttribute('width', Math.max(w, h));
-              canvas.setAttribute('height', Math.min(w, h));
+              canvas.setAttribute('width', Math.round(Math.max(w, h)));
+              canvas.setAttribute('height', Math.round(Math.min(w, h)));
             }
             applyRotation();
             var guard = false;
@@ -267,8 +275,14 @@
                   var w = window.innerWidth * dpr;
                   var h = window.innerHeight * dpr;
                   if (h > w) {
-                    canvas.setAttribute('width', Math.max(w, h));
-                    canvas.setAttribute('height', Math.min(w, h));
+                    var targetW = Math.round(Math.max(w, h));
+                    var targetH = Math.round(Math.min(w, h));
+                    if (Math.round(Number(canvas.getAttribute('width'))) !== targetW) {
+                      canvas.setAttribute('width', targetW);
+                    }
+                    if (Math.round(Number(canvas.getAttribute('height'))) !== targetH) {
+                      canvas.setAttribute('height', targetH);
+                    }
                   }
                 }
                 applyRotation();
