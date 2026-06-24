@@ -67,8 +67,10 @@
                      ('ontouchstart' in window);
 
       function applyRotation() {
-        var shortSide = Math.min(screen.width, screen.height);
-        var longSide  = Math.max(screen.width, screen.height);
+        var w         = window.innerWidth;
+        var h         = window.innerHeight;
+        var shortSide = Math.min(w, h);
+        var longSide  = Math.max(w, h);
         canvas.style.position        = 'fixed';
         canvas.style.width           = longSide + 'px';
         canvas.style.height          = shortSide + 'px';
