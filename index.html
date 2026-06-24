@@ -5,11 +5,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | Juegos Educativos</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="stylesheet" href="TemplateData/style.css?v=3">
+
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=640 height=360 tabindex="-1"></canvas>
+      <canvas id="unity-canvas" width=640 height=360 tabindex="-1" ontouchstart=""></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
@@ -62,184 +63,65 @@
       };
 
       var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
+
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) || 
                      ('ontouchstart' in window);
 
       if (isMobile) {
-        try {
-          var originalWidthDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
-          var originalHeightDesc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'height');
-
-          if (originalWidthDesc && originalHeightDesc) {
-            Object.defineProperty(canvas, 'width', {
-              get: function() {
-                return originalWidthDesc.get.call(this);
-              },
-              set: function(val) {
-                var dpr = window.devicePixelRatio || 1;
-                var w = window.innerWidth * dpr;
-                var h = window.innerHeight * dpr;
-                if (h > w) {
-                  originalWidthDesc.set.call(this, Math.round(Math.max(w, h)));
-                } else {
-                  originalWidthDesc.set.call(this, val);
-                }
-              }
-            });
-
-            Object.defineProperty(canvas, 'height', {
-              get: function() {
-                return originalHeightDesc.get.call(this);
-              },
-              set: function(val) {
-                var dpr = window.devicePixelRatio || 1;
-                var w = window.innerWidth * dpr;
-                var h = window.innerHeight * dpr;
-                if (h > w) {
-                  originalHeightDesc.set.call(this, Math.round(Math.min(w, h)));
-                } else {
-                  originalHeightDesc.set.call(this, val);
-                }
-              }
-            });
-          }
-        } catch (e) {
-        }
-
-        try {
-          var originalSetAttribute = canvas.setAttribute;
-          canvas.setAttribute = function(name, value) {
-            if (isMobile) {
-              var dpr = window.devicePixelRatio || 1;
-              var w = window.innerWidth * dpr;
-              var h = window.innerHeight * dpr;
-              if (h > w) {
-                if (name === 'width') {
-                  value = Math.round(Math.max(w, h));
-                } else if (name === 'height') {
-                  value = Math.round(Math.min(w, h));
-                }
-              }
-            }
-            originalSetAttribute.call(this, name, value);
-          };
-        } catch (e) {
-        }
-      }
-
-      function applyRotation() {
-        var vw = window.innerWidth;
-        var vh = window.innerHeight;
-        if (vw >= vh) {
-          container.style.position        = 'fixed';
-          container.style.width           = '100%';
-          container.style.height          = '100%';
-          container.style.top             = '0';
-          container.style.left            = '0';
-          container.style.transform       = 'none';
-          container.style.transformOrigin = '';
-          container.style.overflow        = 'hidden';
-          container.style.background      = 'black';
-          container.style.zIndex          = '9999';
-          canvas.style.width              = '100%';
-          canvas.style.height             = '100%';
-          canvas.style.position           = '';
-          canvas.style.transform          = '';
-          canvas.style.top                = '';
-          canvas.style.left               = '';
-          canvas.style.maxWidth           = '';
-          canvas.style.maxHeight          = '';
-          canvas.style.zIndex             = '';
-        } else {
-          container.style.position        = 'fixed';
-          container.style.width           = vh + 'px';
-          container.style.height          = vw + 'px';
-          container.style.top             = '50%';
-          container.style.left            = '50%';
-          container.style.transform       = 'translate(-50%, -50%) rotate(90deg)';
-          container.style.transformOrigin = 'center center';
-          container.style.overflow        = 'hidden';
-          container.style.background      = 'black';
-          container.style.zIndex          = '9999';
-          canvas.style.width              = '100%';
-          canvas.style.height             = '100%';
-          canvas.style.position           = '';
-          canvas.style.transform          = '';
-          canvas.style.top                = '';
-          canvas.style.left               = '';
-          canvas.style.maxWidth           = '';
-          canvas.style.maxHeight          = '';
-          canvas.style.zIndex             = '';
-        }
-      }
-
-      function remapPointer(e) {
-        if (window.innerHeight <= window.innerWidth) {
-          return;
-        }
-        var rect    = canvas.getBoundingClientRect();
-        var cx      = rect.left + rect.width  / 2;
-        var cy      = rect.top  + rect.height / 2;
-        var dx      = e.clientX - cx;
-        var dy      = e.clientY - cy;
-        var newX    = cx - dy;
-        var newY    = cy + dx;
-        Object.defineProperty(e, 'clientX', { value: newX, configurable: true });
-        Object.defineProperty(e, 'clientY', { value: newY, configurable: true });
-        Object.defineProperty(e, 'pageX',   { value: newX, configurable: true });
-        Object.defineProperty(e, 'pageY',   { value: newY, configurable: true });
-      }
-
-      if (isMobile) {
         var meta = document.createElement('meta');
-        meta.name    = 'viewport';
-        meta.content = 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         container.className = "unity-mobile";
-        canvas.className    = "unity-mobile";
-
-        var dpr = window.devicePixelRatio || 1;
-        var w = window.innerWidth * dpr;
-        var h = window.innerHeight * dpr;
-        if (h > w) {
-          canvas.setAttribute('width', Math.round(Math.max(w, h)));
-          canvas.setAttribute('height', Math.round(Math.min(w, h)));
-        }
-
-        applyRotation();
-        window.addEventListener('resize',            applyRotation);
-        window.addEventListener('orientationchange', function() { setTimeout(applyRotation, 100); });
-
-        ['pointerdown','pointermove','pointerup','pointercancel','mousedown','mousemove','mouseup'].forEach(function(evtName) {
-          canvas.addEventListener(evtName, remapPointer, { passive: false, capture: true });
-        });
-
-        if (isSafari) {
-          function touchToPointer(type, touch) {
-            canvas.dispatchEvent(new PointerEvent(type, {
-              pointerId:   touch.identifier + 1,
-              pointerType: 'touch',
-              isPrimary:   touch.identifier === 0,
-              clientX:     touch.clientX,
-              clientY:     touch.clientY,
-              screenX:     touch.screenX,
-              screenY:     touch.screenY,
-              pageX:       touch.pageX,
-              pageY:       touch.pageY,
-              pressure:    type === 'pointerup' ? 0 : 1,
-              bubbles:     true,
-              cancelable:  true,
-            }));
-          }
-          canvas.addEventListener('touchstart',  function(e) { canvas.focus(); e.preventDefault(); Array.from(e.changedTouches).forEach(function(t){ touchToPointer('pointerdown',   t); }); }, { passive: false });
-          canvas.addEventListener('touchmove',   function(e) { e.preventDefault(); Array.from(e.changedTouches).forEach(function(t){ touchToPointer('pointermove',   t); }); }, { passive: false });
-          canvas.addEventListener('touchend',    function(e) { e.preventDefault(); Array.from(e.changedTouches).forEach(function(t){ touchToPointer('pointerup',     t); }); }, { passive: false });
-          canvas.addEventListener('touchcancel', function(e) { Array.from(e.changedTouches).forEach(function(t){ touchToPointer('pointercancel', t); }); }, { passive: false });
-        }
+        canvas.className = "unity-mobile";
       } else {
-        canvas.style.width  = "640px";
+        canvas.style.width = "640px";
         canvas.style.height = "360px";
+      }
+
+      if (isSafari && isMobile) {
+        function touchToPointer(type, touch) {
+          var evt = new PointerEvent(type, {
+            pointerId: touch.identifier + 1,
+            pointerType: 'touch',
+            isPrimary: touch.identifier === 0,
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            screenX: touch.screenX,
+            screenY: touch.screenY,
+            pageX: touch.pageX,
+            pageY: touch.pageY,
+            pressure: type === 'pointerup' ? 0 : 1,
+            bubbles: true,
+            cancelable: true,
+          });
+          canvas.dispatchEvent(evt);
+        }
+
+        canvas.addEventListener('touchstart', function(e) {
+          canvas.focus();
+          e.preventDefault();
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointerdown', e.changedTouches[i]);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', function(e) {
+          e.preventDefault();
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointermove', e.changedTouches[i]);
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointerup', e.changedTouches[i]);
+        }, { passive: false });
+
+        canvas.addEventListener('touchcancel', function(e) {
+          for (var i = 0; i < e.changedTouches.length; i++)
+            touchToPointer('pointercancel', e.changedTouches[i]);
+        }, { passive: false });
       }
 
       loadingBar.style.display = "block";
@@ -251,87 +133,158 @@
           progressBarFull.style.width = 100 * progress + "%";
         }).then((unityInstance) => {
           loadingBar.style.display = "none";
-          if (isMobile) {
-            var dpr = window.devicePixelRatio || 1;
-            var w = window.innerWidth * dpr;
-            var h = window.innerHeight * dpr;
-            if (h > w) {
-              canvas.setAttribute('width', Math.round(Math.max(w, h)));
-              canvas.setAttribute('height', Math.round(Math.min(w, h)));
-            }
-            applyRotation();
-            var guard = false;
-            new MutationObserver(function(mutations) {
-              if (!guard) {
-                guard = true;
-                var widthOrHeightChanged = false;
-                mutations.forEach(function(mutation) {
-                  if (mutation.attributeName === 'width' || mutation.attributeName === 'height') {
-                    widthOrHeightChanged = true;
-                  }
-                });
-                if (widthOrHeightChanged) {
-                  var dpr = window.devicePixelRatio || 1;
-                  var w = window.innerWidth * dpr;
-                  var h = window.innerHeight * dpr;
-                  if (h > w) {
-                    var targetW = Math.round(Math.max(w, h));
-                    var targetH = Math.round(Math.min(w, h));
-                    if (Math.round(Number(canvas.getAttribute('width'))) !== targetW) {
-                      canvas.setAttribute('width', targetW);
-                    }
-                    if (Math.round(Number(canvas.getAttribute('height'))) !== targetH) {
-                      canvas.setAttribute('height', targetH);
-                    }
-                  }
-                }
-                applyRotation();
-                guard = false;
-              }
-            }).observe(canvas, { attributes: true, attributeFilter: ['style', 'width', 'height'] });
-          }
         }).catch((message) => {
           alert(message);
         });
       };
       document.body.appendChild(script);
 
-      if (isMobile) {
-        var dbg = document.createElement('div');
-        dbg.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;background:rgba(0,0,0,0.8);color:lime;font-size:11px;padding:6px;font-family:monospace;max-width:100%;pointer-events:none;';
-        document.body.appendChild(dbg);
-        setInterval(function() {
-          dbg.innerHTML =
-            'iW=' + window.innerWidth + ' iH=' + window.innerHeight + '<br>' +
-            'ctr.style.w=' + container.style.width + ' h=' + container.style.height + '<br>' +
-            'ctr.offset.w=' + container.offsetWidth + ' h=' + container.offsetHeight + '<br>' +
-            'ctr.tf=' + container.style.transform + '<br>' +
-            'cnv.style.w=' + canvas.style.width + ' h=' + canvas.style.height + '<br>' +
-            'cnv.offset.w=' + canvas.offsetWidth + ' h=' + canvas.offsetHeight + '<br>' +
-            'cnv.attr.w=' + canvas.getAttribute('width') + ' h=' + canvas.getAttribute('height') + '<br>' +
-            'cnv.tf=' + canvas.style.transform;
-        }, 500);
-      }
-
       var fsBtn = document.getElementById('mi-fullscreen-btn');
 
-      function toggleFS() {
-        var container = document.getElementById('unity-container');
-        if (!document.fullscreenElement) {
-          if (container.requestFullscreen) container.requestFullscreen();
-          else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-          else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
-          fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
+      function isPortrait() {
+        return window.innerHeight > window.innerWidth;
+      }
+
+      var portraitActive = false;
+      var touchHandler = null;
+
+      function remapTouchCoords(e) {
+        var rect = canvas.getBoundingClientRect();
+        var centerX = rect.left + rect.width / 2;
+        var centerY = rect.top + rect.height / 2;
+
+        var touches = e.changedTouches || e.touches;
+        for (var i = 0; i < touches.length; i++) {
+          var t = touches[i];
+          var dx = t.clientX - centerX;
+          var dy = t.clientY - centerY;
+          Object.defineProperty(t, 'clientX', { value: centerX - dy, configurable: true });
+          Object.defineProperty(t, 'clientY', { value: centerY + dx, configurable: true });
+        }
+      }
+
+      function applyPortraitRotation() {
+        canvas.style.position = 'fixed';
+        canvas.style.width = '100vh';
+        canvas.style.height = '100vw';
+        canvas.style.maxWidth = 'none';
+        canvas.style.maxHeight = 'none';
+        canvas.style.top = '50vh';
+        canvas.style.left = '50vw';
+        canvas.style.zIndex = '99999';
+        canvas.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+        canvas.style.transformOrigin = 'center center';
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.background = 'black';
+        container.style.zIndex = '9998';
+        if (!portraitActive) {
+          portraitActive = true;
+          touchHandler = remapTouchCoords;
+          canvas.addEventListener('touchstart', touchHandler, { passive: false, capture: true });
+          canvas.addEventListener('touchmove', touchHandler, { passive: false, capture: true });
+          canvas.addEventListener('touchend', touchHandler, { passive: false, capture: true });
+        }
+      }
+
+      function removePortraitRotation() {
+        canvas.style.position = '';
+        canvas.style.width = '';
+        canvas.style.height = '';
+        canvas.style.maxWidth = '';
+        canvas.style.maxHeight = '';
+        canvas.style.top = '';
+        canvas.style.left = '';
+        canvas.style.zIndex = '';
+        canvas.style.transform = '';
+        canvas.style.transformOrigin = '';
+        container.style.position = '';
+        container.style.top = '';
+        container.style.left = '';
+        container.style.width = '';
+        container.style.height = '';
+        container.style.background = '';
+        container.style.zIndex = '';
+        if (portraitActive && touchHandler) {
+          canvas.removeEventListener('touchstart', touchHandler, { capture: true });
+          canvas.removeEventListener('touchmove', touchHandler, { capture: true });
+          canvas.removeEventListener('touchend', touchHandler, { capture: true });
+          touchHandler = null;
+          portraitActive = false;
+        }
+      }
+
+
+      function enterFS() {
+        var req = container.requestFullscreen || container.webkitRequestFullscreen || container.mozRequestFullScreen;
+        if (req) {
+          try {
+            var promise = req.call(container);
+            if (promise && promise.then) {
+              promise.then(function() {
+                if (isPortrait()) applyPortraitRotation();
+              }).catch(function(e) {
+                console.warn('Fullscreen blocked, using fallback', e);
+                container.classList.add('fs-fallback');
+                if (isPortrait()) applyPortraitRotation();
+              });
+            } else {
+              setTimeout(function() {
+                if (isPortrait()) applyPortraitRotation();
+              }, 150);
+            }
+          } catch (err) {
+            console.warn('Fullscreen error, using fallback', err);
+            container.classList.add('fs-fallback');
+            if (isPortrait()) applyPortraitRotation();
+          }
         } else {
+          container.classList.add('fs-fallback');
+          if (isPortrait()) applyPortraitRotation();
+        }
+      }
+
+      function exitFS() {
+        removePortraitRotation();
+        container.classList.remove('fs-fallback');
+        if (document.fullscreenElement) {
           if (document.exitFullscreen) document.exitFullscreen();
           else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
           else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        }
+      }
+
+      var fsActive = false;
+
+      function toggleFS() {
+        if (!fsActive) {
+          fsActive = true;
+          enterFS();
+          fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
+        } else {
+          fsActive = false;
+          exitFS();
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
         }
       }
 
       document.addEventListener('fullscreenchange', function() {
-        if (!document.fullscreenElement) {
+        if (!document.fullscreenElement && fsActive) {
+          fsActive = false;
+          removePortraitRotation();
+          container.classList.remove('fs-fallback');
+          fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
+        }
+      });
+
+      document.addEventListener('webkitfullscreenchange', function() {
+        if (!document.webkitFullscreenElement && fsActive) {
+          fsActive = false;
+          removePortraitRotation();
+          container.classList.remove('fs-fallback');
           fsBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;fill:white"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>';
         }
       });
