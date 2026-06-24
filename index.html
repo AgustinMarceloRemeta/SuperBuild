@@ -67,28 +67,27 @@
                      ('ontouchstart' in window);
 
       function applyRotation() {
-        var w         = window.innerWidth;
-        var h         = window.innerHeight;
-        var shortSide = Math.min(w, h);
-        var longSide  = Math.max(w, h);
-        canvas.style.position        = 'fixed';
-        canvas.style.width           = longSide + 'px';
-        canvas.style.height          = shortSide + 'px';
-        canvas.style.top             = '50%';
-        canvas.style.left            = '50%';
-        canvas.style.transform       = 'translate(-50%, -50%) rotate(90deg)';
-        canvas.style.transformOrigin = 'center center';
-        canvas.style.maxWidth        = 'none';
-        canvas.style.maxHeight       = 'none';
-        canvas.style.zIndex          = '9999';
-        container.style.position     = 'fixed';
-        container.style.top          = '0';
-        container.style.left         = '0';
-        container.style.width        = '100%';
-        container.style.height       = '100%';
-        container.style.background   = 'black';
-        container.style.overflow     = 'hidden';
-        container.style.zIndex       = '9998';
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+        container.style.position        = 'fixed';
+        container.style.width           = vh + 'px';
+        container.style.height          = vw + 'px';
+        container.style.top             = '50%';
+        container.style.left            = '50%';
+        container.style.transform       = 'translate(-50%, -50%) rotate(90deg)';
+        container.style.transformOrigin = 'center center';
+        container.style.overflow        = 'hidden';
+        container.style.background      = 'black';
+        container.style.zIndex          = '9999';
+        canvas.style.width              = '100%';
+        canvas.style.height             = '100%';
+        canvas.style.position           = '';
+        canvas.style.transform          = '';
+        canvas.style.top                = '';
+        canvas.style.left               = '';
+        canvas.style.maxWidth           = '';
+        canvas.style.maxHeight          = '';
+        canvas.style.zIndex             = '';
       }
 
       function remapPointer(e) {
